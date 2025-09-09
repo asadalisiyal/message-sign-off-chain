@@ -12,105 +12,137 @@
   <h1>MetaMask Message Signing</h1>
   <button id="connect">Connect MetaMask</button>
   <button id="sign">Sign Message</button>
+  <div id="metamask-output"></div>
+
   <h1>Keplr Message Signing</h1>
   <button id="connect-keplr">Connect Keplr</button>
   <button id="sign-keplr">Sign Message with Keplr</button>
-  <p id="status"></p>
+  <div id="keplr-output"></div>
+
+  <h2>Signature RSV Extractor</h2>
+  <input type="text" id="signature-input" placeholder="Paste signature here" style="width: 400px;" />
+  <button id="get-rsv">Get RSV</button>
+  <div id="rsv-output"></div>
+
   <script>
-    // MetaMask logic
-    const connectButton = document.getElementById("connect");
-    const signButton = document.getElementById("sign");
-    const status = document.getElementById("status");
-    let account;
+    document.addEventListener("DOMContentLoaded", function () {
+      // MetaMask logic
+      const connectButton = document.getElementById("connect");
+      const signButton = document.getElementById("sign");
+      const metamaskOutput = document.getElementById("metamask-output");
+      let account;
 
-    connectButton.addEventListener("click", async () => {
-      console.log("Connect button clicked");
+      connectButton.addEventListener("click", async () => {
+        if (typeof window.ethereum === "undefined") {
+          metamaskOutput.innerText = "MetaMask is not installed!";
+          return;
+        }
 
-      if (typeof window.ethereum === "undefined") {
-        status.innerText = "MetaMask is not installed!";
-        return;
-      }
+        try {
+          const accounts = await window.ethereum.request({
+            method: "eth_requestAccounts",
+          });
+          account = accounts[0];
+          metamaskOutput.innerText = `Connected: ${account}`;
+        } catch (error) {
+          metamaskOutput.innerText = `Error: ${error.message}`;
+        }
+      });
 
-      try {
-        const accounts = await window.ethereum.request({
-          method: "eth_requestAccounts",
-        });
-        account = accounts[0];
-        status.innerText = `Connected: ${account}`;
-      } catch (error) {
-        status.innerText = `Error: ${error.message}`;
-      }
-    });
+      signButton.addEventListener("click", async () => {
+        if (!account) {
+          metamaskOutput.innerText = "Connect MetaMask first!";
+          return;
+        }
 
-    signButton.addEventListener("click", async () => {
-      if (!account) {
-        status.innerText = "Connect MetaMask first!";
-        return;
-      }
-
-      const message = "Hello from WaleeChain!";
-      try {
-        const signature = await window.ethereum.request({
-          method: "personal_sign",
-          params: [message, account],
-        });
-
-        // Verify signature
-        const recovered = ethers.utils.verifyMessage(message, signature);
-        status.innerText = `Signature: ${signature}\nRecovered: ${recovered}`;
-      } catch (error) {
-        status.innerText = `Error: ${error.message}`;
-      }
-    });
-
-    // Keplr logic
-    const connectKeplrButton = document.getElementById("connect-keplr");
-    const signKeplrButton = document.getElementById("sign-keplr");
-    let keplrAddress = null;
-
-    connectKeplrButton.addEventListener("click", async () => {
-      if (!window.keplr) {
-        status.innerText = "Keplr extension is not installed!";
-        return;
-      }
-      try {
-        const chainId = "wle";
-        await window.keplr.enable(chainId);
-        const offlineSigner = window.getOfflineSigner(chainId);
-        const accounts = await offlineSigner.getAccounts();
-        keplrAddress = accounts[0].address;
-        status.innerText = `Keplr Connected: ${keplrAddress}`;
-      } catch (error) {
-        status.innerText = `Keplr Error: ${error.message}`;
-      }
-    });
-
-    signKeplrButton.addEventListener("click", async () => {
-      if (!keplrAddress) {
-        status.innerText = "Connect Keplr first!";
-        return;
-      }
-      try {
-        const chainId = "wle";
-        const offlineSigner = window.getOfflineSigner(chainId);
         const message = "Hello from WaleeChain!";
-        // Amino signDoc structure for demonstration
-        const signDoc = {
-          msgs: [],
-          fee: { amount: [], gas: "0" },
-          chain_id: chainId,
-          memo: message,
-          account_number: "0",
-          sequence: "0",
-        };
-        const result = await offlineSigner.signAmino(
-          keplrAddress,
-          signDoc
-        );
-        status.innerText = `Keplr Signature: ${JSON.stringify(result.signature)}`;
-      } catch (error) {
-        status.innerText = `Keplr Sign Error: ${error.message}`;
-      }
+        try {
+          const signature = await window.ethereum.request({
+            method: "personal_sign",
+            params: [message, account],
+          });
+
+          // Verify signature
+          const recovered = ethers.utils.verifyMessage(message, signature);
+          metamaskOutput.innerText = `Signature: ${signature}\nRecovered: ${recovered}`;
+        } catch (error) {
+          metamaskOutput.innerText = `Error: ${error.message}`;
+        }
+      });
+
+      // Keplr logic
+      const connectKeplrButton = document.getElementById("connect-keplr");
+      const signKeplrButton = document.getElementById("sign-keplr");
+      const keplrOutput = document.getElementById("keplr-output");
+      let keplrAddress = null;
+
+      connectKeplrButton.addEventListener("click", async () => {
+        if (!window.keplr) {
+          keplrOutput.innerText = "Keplr extension is not installed!";
+          return;
+        }
+        try {
+          const chainId = "wle";
+          await window.keplr.enable(chainId);
+          const offlineSigner = window.getOfflineSigner(chainId);
+          const accounts = await offlineSigner.getAccounts();
+          keplrAddress = accounts[0].address;
+          keplrOutput.innerText = `Keplr Connected: ${keplrAddress}`;
+        } catch (error) {
+          keplrOutput.innerText = `Keplr Error: ${error.message}`;
+        }
+      });
+
+      signKeplrButton.addEventListener("click", async () => {
+        if (!keplrAddress) {
+          keplrOutput.innerText = "Connect Keplr first!";
+          return;
+        }
+        try {
+          const chainId = "wle";
+          const offlineSigner = window.getOfflineSigner(chainId);
+          const message = "Hello from WaleeChain!";
+          // Amino signDoc structure for demonstration
+          const signDoc = {
+            msgs: [],
+            fee: { amount: [], gas: "0" },
+            chain_id: chainId,
+            memo: message,
+            account_number: "0",
+            sequence: "0",
+          };
+          const result = await offlineSigner.signAmino(
+            keplrAddress,
+            signDoc
+          );
+          keplrOutput.innerText = `Keplr Signature: ${JSON.stringify(
+            result.signature
+          )}`;
+        } catch (error) {
+          keplrOutput.innerText = `Keplr Sign Error: ${error.message}`;
+        }
+      });
+
+      // RSV Extractor logic
+      const signatureInput = document.getElementById("signature-input");
+      const getRSVButton = document.getElementById("get-rsv");
+      const rsvOutput = document.getElementById("rsv-output");
+
+      getRSVButton.addEventListener("click", () => {
+        const sig = signatureInput.value.trim();
+        if (!sig) {
+          rsvOutput.innerText = "Please paste a signature.";
+          return;
+        }
+        try {
+          // ethers.js expects signature as hex string
+          const signature = ethers.utils.splitSignature(sig);
+          rsvOutput.innerText =
+            `r: ${signature.r}\ns: ${signature.s}\nv: ${signature.v}`;
+        } catch (err) {
+          rsvOutput.innerText = "Invalid signature format.";
+        }
+      });
     });
   </script>
 </body>
