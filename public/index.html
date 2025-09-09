@@ -173,6 +173,7 @@
 
     <div class="section">
       <h2>MetaMask Message Signing</h2>
+      <input type="text" id="metamask-message-input" placeholder="Enter message to sign" style="width:100%;margin-bottom:10px;" />
       <div class="btn-group">
         <button id="connect">Connect MetaMask</button>
         <button id="sign">Sign Message</button>
@@ -203,6 +204,7 @@
       const connectButton = document.getElementById("connect");
       const signButton = document.getElementById("sign");
       const metamaskOutput = document.getElementById("metamask-output");
+      const metamaskMessageInput = document.getElementById("metamask-message-input");
       let account;
 
       connectButton.addEventListener("click", async () => {
@@ -228,7 +230,7 @@
           return;
         }
 
-        const message = "Hello from WaleeChain!";
+        const message = metamaskMessageInput.value.trim() || "Hello from WaleeChain!";
         try {
           const signature = await window.ethereum.request({
             method: "personal_sign",
