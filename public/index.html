@@ -4,25 +4,198 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MetaMask Sign</title>
+  <title>Wallet Signature Demo</title>
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css?family=Inter:400,600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', Arial, sans-serif;
+      background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      color: #22223b;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 40px auto;
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 8px 32px rgba(60, 72, 107, 0.12);
+      padding: 36px 32px 32px 32px;
+    }
+
+    h1,
+    h2 {
+      font-weight: 600;
+      color: #3f51b5;
+      margin-bottom: 18px;
+      letter-spacing: 1px;
+    }
+
+    h2 {
+      margin-top: 36px;
+      font-size: 1.3em;
+    }
+
+    .section {
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid #e0e7ff;
+    }
+
+    .section:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+
+    button {
+      background: linear-gradient(90deg, #3f51b5 0%, #5c6bc0 100%);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 22px;
+      font-size: 1em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      box-shadow: 0 2px 8px rgba(63, 81, 181, 0.08);
+    }
+
+    button:hover {
+      background: linear-gradient(90deg, #283593 0%, #3f51b5 100%);
+    }
+
+    .output {
+      background: #f4f6fb;
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin-top: 8px;
+      font-size: 0.98em;
+      color: #22223b;
+      word-break: break-all;
+      min-height: 28px;
+      box-shadow: 0 1px 4px rgba(60, 72, 107, 0.04);
+    }
+
+    input[type="text"] {
+      width: 100%;
+      max-width: 420px;
+      padding: 10px 12px;
+      border: 1px solid #c5cae9;
+      border-radius: 8px;
+      font-size: 1em;
+      margin-bottom: 10px;
+      background: #f8fafc;
+      transition: border 0.2s;
+      box-sizing: border-box;
+    }
+
+    input[type="text"]:focus {
+      border: 1.5px solid #3f51b5;
+      outline: none;
+      background: #fff;
+    }
+
+    @media (max-width: 800px) {
+      .container {
+        max-width: 98vw;
+        padding: 18px 8vw;
+      }
+    }
+
+    @media (max-width: 500px) {
+      .container {
+        padding: 12px 2vw;
+      }
+
+      button,
+      input[type="text"] {
+        font-size: 0.98em;
+        padding: 8px 10px;
+      }
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .brand-logo {
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      background: #3f51b5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 1.5em;
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(63, 81, 181, 0.12);
+    }
+
+    .brand-title {
+      font-size: 1.3em;
+      font-weight: 700;
+      color: #3f51b5;
+      letter-spacing: 1px;
+    }
+
+    .label {
+      font-size: 1em;
+      font-weight: 500;
+      color: #22223b;
+      margin-bottom: 6px;
+      display: block;
+    }
+  </style>
 </head>
 
 <body>
-  <h1>MetaMask Message Signing</h1>
-  <button id="connect">Connect MetaMask</button>
-  <button id="sign">Sign Message</button>
-  <div id="metamask-output"></div>
+  <div class="container">
+    <div class="brand" style="justify-content: center; text-align: center;">
+      <div class="brand-logo">W</div>
+      <div class="brand-title" style="font-size:1.5em; font-weight:700; color:#3f51b5; letter-spacing:1px; text-align:center;">
+        WaleeChain Signature Extractor
+      </div>
+    </div>
 
-  <h1>Keplr Message Signing</h1>
-  <button id="connect-keplr">Connect Keplr</button>
-  <button id="sign-keplr">Sign Message with Keplr</button>
-  <div id="keplr-output"></div>
+    <div class="section">
+      <h2>MetaMask Message Signing</h2>
+      <div class="btn-group">
+        <button id="connect">Connect MetaMask</button>
+        <button id="sign">Sign Message</button>
+      </div>
+      <div id="metamask-output" class="output"></div>
+    </div>
 
-  <h2>Signature RSV Extractor</h2>
-  <input type="text" id="signature-input" placeholder="Paste signature here" style="width: 400px;" />
-  <button id="get-rsv">Get RSV</button>
-  <div id="rsv-output"></div>
+    <div class="section">
+      <h2>Keplr Message Signing</h2>
+      <div class="btn-group">
+        <button id="connect-keplr">Connect Keplr</button>
+        <button id="sign-keplr">Sign Message with Keplr</button>
+      </div>
+      <div id="keplr-output" class="output"></div>
+    </div>
+
+    <div class="section">
+      <h2>Signature RSV Extractor</h2>
+      <input type="text" id="signature-input" placeholder="Paste signature here" />
+      <button id="get-rsv">Get RSV</button>
+      <div id="rsv-output" class="output"></div>
+    </div>
+  </div>
 
   <script>
     document.addEventListener("DOMContentLoaded", function () {
